@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link href="assets/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #response-container {
+            display: none;
+            padding: 1rem;
+            margin: 3rem 5%;
+            font-size: 120%;
+            border: 5px dashed #ccc;
+            word-wrap: break-word;
+        }
+        label {
+            margin-left: 0.3rem;
+            margin-right: 0.3rem;
+        }
+        button {
+            font-size: 100%;
+            padding: 0.5rem;
+            margin: 0.3rem;
+            text-transform: uppercase;
+        }
+        .nav-link {
+            color:white!important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-success text-white">
+        <div class="container-fluid">
+            
+            <div>
+                <button class="navbar-toggler text-white" style="color:white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon text-white" style="color:white"></span>
+            </button>
+            <button class="btn btn-light">Compute</button>
+            </div>
+            <a class="navbar-brand text-white" href="#">EcoEnergy Tracker</a>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav text-white">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Pricing</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Dropdown link
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="row mt-1" style="height: 300px;">
+        <div class="col-4 bg-success" >
+            1
+        </div>
+        <div class="col-8 bg-dark">
+            2
+        </div>
+    </div>
+
+    <div style="width: 400px; margin: auto;">
+        <h2>Search Appliance:</h2>
+        <input type="text" id="searchByName" name="" class="form-control mb-2">
+        <button type="submit" class="btn btn-primary" style="width: 100%;margin: auto;" onclick="searchByName(event);">Search</button>
+    </div>
+
+    <pre id="response-container"></pre>
+
+
+    <script>
+        window.addEventListener('pywebviewready', function() {
+            var container = document.getElementById('pywebview-status')
+            container.innerHTML = '<i>pywebview</i> is ready'
+        })
+
+        function showData() {
+            pywebview.api.fetch_data().then(showResponse)
+        }
+
+        function searchByName(event) {
+            event.preventDefault();
+            var name = document.getElementById('searchByName').value;
+            pywebview.api.search_data(name).then(showResponse)
+        }
+
+        function showResponse(response) {
+            var container = document.getElementById('response-container');
+            container.style.display = 'block';
+            container.innerText = response.message;
+        }
+
+        setTimeout(() => {
+          showData();
+        }, 1000);
+    </script>
+    <script src="assets/bootstrap.min.js"></script>
+</body>
+</html>
