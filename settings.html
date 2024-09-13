@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+.droptarget {
+  width: 300px; 
+  height: 300px;
+  padding: 10px;
+  border: 1px solid black;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.dragimage {
+  width: 100px;
+  height: 100px;
+  cursor: move;
+}
+</style>
+</head>
+<body>
+<h1>Drag and Drop Image</h1>
+
+<p>Drag the image between the two rectangles:</p>
+
+<div class="droptarget" ondrop="drop(event)" ondragover="allowDrop(event)">
+  <!-- Initial placeholder for drag target -->
+</div>
+
+<p id="demo"></p>
+
+<div class="droptarget" ondrop="drop(event)" ondragover="allowDrop(event)">
+  <!-- Target for dropping images -->
+  <!-- Image to be dragged -->
+<img src="monitor.png" class="dragimage" id="dragimage" draggable="true" ondragstart="dragStart(event)" />
+</div>
+
+
+
+<script>
+function dragStart(event) {
+  event.dataTransfer.setData("text/plain", event.target.id);
+}
+
+function allowDrop(event) {
+  event.preventDefault();
+}
+
+function drop(event) {
+  event.preventDefault();
+  const data = event.dataTransfer.getData("text/plain");
+  const draggedImage = document.getElementById(data);
+  
+  // Append the dragged image to the drop target
+  event.target.appendChild(draggedImage);
+  
+  document.getElementById("demo").innerHTML = "The image was dropped";
+}
+</script>
+
+</body>
+</html>
