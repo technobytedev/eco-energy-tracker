@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <link href="assets/bootstrap.min.css" rel="stylesheet">
     <style>
+        nav {
+            margin: 0px;
+        }
         #response-container {
             display: none;
             padding: 1rem;
@@ -25,10 +28,25 @@
         .nav-link {
             color:white!important;
         }
+        tr, td {
+            border: 1px solid black;
+        }
+
+        /* Define widths for the table columns */
+        #data-table td:nth-child(1) {
+            min-width: 80px;
+        }
+
+        #data-table td:nth-child(2),
+        #data-table td:nth-child(3) {
+            width: 200px;
+        }
+
+
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-success text-white">
+    <nav class="navbar navbar-expand-lg navbar-light  text-white" style="background: #50B498;">
         <div class="container-fluid">
             
             <div>
@@ -37,7 +55,7 @@
             </button>
             <button class="btn btn-light">Compute</button>
             </div>
-            <a class="navbar-brand text-white" href="#">EcoEnergy Tracker</a>
+            <a class="navbar-brand text-white" href="index.html">EcoEnergy Tracker</a>
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav text-white">
                     <li class="nav-item">
@@ -47,7 +65,7 @@
                         <a class="nav-link" href="#">Features</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
+                        <a class="nav-link" href="settings.html">Setting</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -64,48 +82,131 @@
         </div>
     </nav>
 
-    <div class="row mt-1" style="height: 300px;">
-        <div class="col-4 bg-success" >
-            1
+    <div class="row mt-1" style="height: 500px;">
+        <div class="col-4 bg-white" >
+            <div style="width: 100%; margin: auto; padding: 15px;color: #4e4e4e;">
+                <h3>Search Appliance:</h3>
+                <input type="text" id="searchByName" name="" class="form-control mb-2">
+            </div>
         </div>
-        <div class="col-8 bg-dark">
-            2
+        <div class="col-8 bg-light" >
+            <table id="data-table" border="1" style="display: none%; width:400px;margin: auto;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Firstname</th>
+                        <th>Lastname</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="col-12 " style="background: #468585;margin: auto; ">
+
+            <center>
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+               <img src="monitor.png" class="fluid">
+            </center>
+         
+
+
         </div>
     </div>
 
-    <div style="width: 400px; margin: auto;">
-        <h2>Search Appliance:</h2>
-        <input type="text" id="searchByName" name="" class="form-control mb-2">
-        <button type="submit" class="btn btn-primary" style="width: 100%;margin: auto;" onclick="searchByName(event);">Search</button>
-    </div>
-
-    <pre id="response-container"></pre>
 
 
-    <script>
+
+<script>
         window.addEventListener('pywebviewready', function() {
-            var container = document.getElementById('pywebview-status')
-            container.innerHTML = '<i>pywebview</i> is ready'
-        })
+            var container = document.getElementById('pywebview-status');
+            container.innerHTML = '<i>pywebview</i> is ready';
+        });
 
+        // Listener event for search
+        const s = document.getElementById('searchByName');
+        s.addEventListener("keyup", searchInputBlank);
+
+        function searchInputBlank() {
+            const search = document.getElementById('searchByName').value;
+            if (search === '') {
+                // Call show all data if search is empty
+                showData();
+            } else {
+                searchByName();
+            }
+        }
+
+        // Fetch and display all data
         function showData() {
-            pywebview.api.fetch_data().then(showResponse)
+            pywebview.api.fetch_data().then(showResponse);
         }
 
-        function searchByName(event) {
-            event.preventDefault();
-            var name = document.getElementById('searchByName').value;
-            pywebview.api.search_data(name).then(showResponse)
+        // Search by name
+        function searchByName() {
+            const name = document.getElementById('searchByName').value;
+            pywebview.api.search_data(name).then(showResponse);
         }
 
+        // Display response in an HTML table
         function showResponse(response) {
-            var container = document.getElementById('response-container');
-            container.style.display = 'block';
-            container.innerText = response.message;
+            const table = document.getElementById('data-table');
+            const tbody = document.getElementById('table-body');
+
+            // Clear previous table content
+            tbody.innerHTML = '';
+
+            // Check if response has any data
+            if (response.message.trim()) {
+                // Split the response message by newline to get each row of data
+                const rows = response.message.trim().split('\n');
+
+                rows.forEach(row => {
+                    const [id, firstname, lastname] = row.replace(/ID: |Firstname: |Lastname: /g, '').split(', ');
+
+                    // Create a new table row
+                    const tr = document.createElement('tr');
+
+                    // Create table cells
+                    const tdId = document.createElement('td');
+                    const tdFirstname = document.createElement('td');
+                    const tdLastname = document.createElement('td');
+
+                    // Set the text content of each cell
+                    tdId.textContent = id;
+                    tdFirstname.textContent = firstname;
+                    tdLastname.textContent = lastname;
+
+                    // Append the cells to the row
+                    tr.appendChild(tdId);
+                    tr.appendChild(tdFirstname);
+                    tr.appendChild(tdLastname);
+
+                    // Append the row to the table body
+                    tbody.appendChild(tr);
+                });
+
+                // Show the table
+                table.style.display = 'block';
+            } else {
+                table.style.display = 'none';
+            }
         }
 
+        // Fetch and display all data after a delay
         setTimeout(() => {
-          showData();
+            showData();
         }, 1000);
     </script>
     <script src="assets/bootstrap.min.js"></script>

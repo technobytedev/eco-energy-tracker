@@ -1,81 +1,60 @@
 import webview
 import os
-import mysql.connector
-from mysql.connector import Error
+import sqlite3
 
 class Api:
     def fetch_data(self):
         try:
-            connection = mysql.connector.connect(
-                host='localhost',
-                database='jocos_payroll',
-                user='jocos_payroll_user',
-                password='cedrickarldb',
-                port=3308  # Your MySQL port
-            )
+            # Connect to the SQLite database (it will create the file if it doesn't exist)
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
             
-            if connection.is_connected():
-                cursor = connection.cursor()
-                cursor.execute("SELECT * FROM users;")
-                rows = cursor.fetchall()  # Fetch all rows from the query result
-                columns = cursor.description  # Get column names
+            # Execute the query
+            cursor.execute("SELECT * FROM users;")
+            rows = cursor.fetchall()  # Fetch all rows from the query result
+            columns = [description[0] for description in cursor.description]  # Get column names
 
-                # Extract column names
-                column_names = [column[0] for column in columns]
-
-                # Return the fetched data as a string (for simplicity)
-                result = ""
-                for row in rows:
-                    row_data = {column_names[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
-                    result += f"ID: {row_data['id']}, Firstname: {row_data['firstname']}, Lastname: {row_data['lastname']}\n"
-                
-                return {'message': result}
+            # Return the fetched data as a string (for simplicity)
+            result = ""
+            for row in rows:
+                row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
+                result += f"ID: {row_data['id']}, Firstname: {row_data['firstname']}, Lastname: {row_data['lastname']}\n"
+            
+            return {'message': result}
         
-        except Error as e:
+        except sqlite3.Error as e:
             return {'message': f"Error: {e}"}
         finally:
-            if connection.is_connected():
-                cursor.close()
-                connection.close()
+            cursor.close()
+            connection.close()
 
     def search_data(self, searchByName):
         try:
-            connection = mysql.connector.connect(
-                host='localhost',
-                database='jocos_payroll',
-                user='jocos_payroll_user',
-                password='cedrickarldb',
-                port=3308  # Your MySQL port
-            )
+            # Connect to the SQLite database
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+
+            # Query to search name
+            query = "SELECT * FROM users WHERE firstname LIKE ? OR lastname LIKE ?;"
+            search_pattern = f"%{searchByName}%"  # Add wildcard characters before and after the search term
+            cursor.execute(query, (search_pattern, search_pattern))
+
+            rows = cursor.fetchall()  # Fetch all rows from the query result
+            columns = [description[0] for description in cursor.description]  # Get column names
+
+            # Return the fetched data as a string (for simplicity)
+            result = ""
+            for row in rows:
+                row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
+                result += f"ID: {row_data['id']}, Firstname: {row_data['firstname']}, Lastname: {row_data['lastname']}\n"
             
-            if connection.is_connected():
-                cursor = connection.cursor()
-
-                # query to search name
-                query = "SELECT * FROM users WHERE firstname LIKE %s;"
-                search_pattern = f"%{searchByName}%"  # Add wildcard characters before and after the search term
-                cursor.execute(query, (search_pattern,))
-
-                rows = cursor.fetchall()  # Fetch all rows from the query result
-                columns = cursor.description  # Get column names
-
-                # Extract column names
-                column_names = [column[0] for column in columns]
-
-                # Return the fetched data as a string (for simplicity)
-                result = ""
-                for row in rows:
-                    row_data = {column_names[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
-                    result += f"ID: {row_data['id']}, Firstname: {row_data['firstname']}, Lastname: {row_data['lastname']}\n"
-                
-                return {'message': result}
+            return {'message': result}
         
-        except Error as e:
+        except sqlite3.Error as e:
             return {'message': f"Error: {e}"}
         finally:
-            if connection.is_connected():
-                cursor.close()
-                connection.close()
+            cursor.close()
+            connection.close()
 
 if __name__ == '__main__':
     api = Api()
@@ -85,5 +64,5 @@ if __name__ == '__main__':
     html_path = os.path.join(current_dir, 'index.html')
 
     # Create the window using the external HTML file
-    window = webview.create_window('JS API example', html_path, js_api=api)
+    window = webview.create_window('ECO ENEGERY', html_path, js_api=api)
     webview.start()
