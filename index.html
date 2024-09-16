@@ -32,20 +32,21 @@
             border: 1px solid black;
         }
 
+
         /* Define widths for the table columns */
         #data-table td:nth-child(1) {
-            min-width: 80px;
+            width: 20%;
         }
 
         #data-table td:nth-child(2),
         #data-table td:nth-child(3) {
-            width: 200px;
+            width: 40%;
         }
 
 
     </style>
 </head>
-<body>
+<body style="padding: 5px;">
     <nav class="navbar navbar-expand-lg navbar-light  text-white" style="background: #50B498;">
         <div class="container-fluid">
             
@@ -86,11 +87,22 @@
         <div class="col-4 bg-white" >
             <div style="width: 100%; margin: auto; padding: 15px;color: #4e4e4e;">
                 <h3>Search Appliance:</h3>
-                <input type="text" id="searchByName" name="" class="form-control mb-2">
+                <input type="text" id="searchByName" class="form-control mb-2">
+                <hr>
+                <h1>Upload and Display Image</h1>
+                 Appliance Name:
+                <input type="text" id="appliance" class="form-control mb-2">
+                 Image:
+                <img id="imagePreview" src="" alt="Image will be displayed here" style="max-width: 90px; height: auto;">
+                <input type="file" id="fileInput" accept="image/*" class="form-control mb-2">
+                <div class="d-grid">
+                    <input type="submit" class="btn btn-primary btn-block" id="uploadButton" value="Upload">
+                </div>
+                <br><br>
             </div>
         </div>
-        <div class="col-8 bg-light" >
-            <table id="data-table" border="1" style="display: none%; width:400px;margin: auto;">
+        <div class="col-8 bg-light p-3" >
+            <table id="data-table" class="table table-fluid" border="1" style="margin: auto;">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -105,19 +117,8 @@
         <div class="col-12 " style="background: #468585;margin: auto; ">
 
             <center>
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
-               <img src="monitor.png" class="fluid">
+                <div id="applianceList">
+                </div>
             </center>
          
 
@@ -133,6 +134,19 @@
             var container = document.getElementById('pywebview-status');
             container.innerHTML = '<i>pywebview</i> is ready';
         });
+
+
+
+        function showAppliance() {
+            pywebview.api.appliance_list().then(outputApplianceList);
+        }
+
+
+        function outputApplianceList(response) {
+            const a = document.getElementById('applianceList');
+            a.innerHTML = response.message;
+        }
+
 
         // Listener event for search
         const s = document.getElementById('searchByName');
@@ -150,7 +164,7 @@
 
         // Fetch and display all data
         function showData() {
-            pywebview.api.fetch_data().then(showResponse);
+            pywebview.api.fetch_appliance().then(showResponse);
         }
 
         // Search by name
@@ -161,53 +175,61 @@
 
         // Display response in an HTML table
         function showResponse(response) {
-            const table = document.getElementById('data-table');
-            const tbody = document.getElementById('table-body');
 
-            // Clear previous table content
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = response.message;
 
             // Check if response has any data
-            if (response.message.trim()) {
-                // Split the response message by newline to get each row of data
-                const rows = response.message.trim().split('\n');
-
-                rows.forEach(row => {
-                    const [id, firstname, lastname] = row.replace(/ID: |Firstname: |Lastname: /g, '').split(', ');
-
-                    // Create a new table row
-                    const tr = document.createElement('tr');
-
-                    // Create table cells
-                    const tdId = document.createElement('td');
-                    const tdFirstname = document.createElement('td');
-                    const tdLastname = document.createElement('td');
-
-                    // Set the text content of each cell
-                    tdId.textContent = id;
-                    tdFirstname.textContent = firstname;
-                    tdLastname.textContent = lastname;
-
-                    // Append the cells to the row
-                    tr.appendChild(tdId);
-                    tr.appendChild(tdFirstname);
-                    tr.appendChild(tdLastname);
-
-                    // Append the row to the table body
-                    tbody.appendChild(tr);
-                });
-
-                // Show the table
-                table.style.display = 'block';
-            } else {
-                table.style.display = 'none';
-            }
         }
 
-        // Fetch and display all data after a delay
+                        // Fetch and display all data after a delay
+                        setTimeout(() => {
+                            showData();
+                            showAppliance();
+                        }, 1000);
+</script>
+<script>
+    //upload image
+    document.getElementById('uploadButton').addEventListener('click', async function (event) {
+        var file = document.getElementById('fileInput').files[0];
+        var appliance = document.getElementById('appliance').value;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var base64Image = e.target.result.split(',')[1];
+            window.pywebview.api.upload_image(base64Image, appliance).then(function (response) {
+                document.getElementById('image').src = response;
+            });
+        };
+        reader.readAsDataURL(file);
+
+        document.getElementById('fileInput').value = '';
+        document.getElementById('appliance').value = ''; 
+        document.getElementById('imagePreview').style.display = 'none'; 
+
         setTimeout(() => {
             showData();
-        }, 1000);
+        }, 2000);
+    });
+    </script>
+    <script>
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        var file = document.getElementById('fileInput').files[0];  // Get selected file
+        var appliance = document.getElementById('appliance').value;  // Get appliance name
+        
+        if (file) {
+            var reader = new FileReader();
+            
+            // Once the file is read as Data URL (base64), display the preview
+            reader.onload = function(e) {
+                var preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;  // Set the base64 data as the image source
+                preview.style.display = 'block';  // Show the image preview
+            };
+            
+            reader.readAsDataURL(file);  // Read the file as base64 Data URL
+        }
+    });
     </script>
     <script src="assets/bootstrap.min.js"></script>
 </body>
