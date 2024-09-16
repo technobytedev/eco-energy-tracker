@@ -1,8 +1,85 @@
 import webview
 import os
 import sqlite3
+import base64
+import uuid
 
 class Api:
+
+    def upload_image(self, base64_image, appliance):
+            try:
+                # Decode the base64 image
+                image_data = base64.b64decode(base64_image)
+                image_name = f"{str(uuid.uuid4())}.png"
+                
+                # Specify the upload folder path
+                upload_folder = os.path.join(os.getcwd(), 'assets/uploads')
+                
+                # Create the folder if it doesn't exist
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)
+                
+                # Full file path for the image
+                file_path = os.path.join(upload_folder, image_name)
+                
+                # Write the image to the folder
+                with open(file_path, 'wb') as f:
+                    f.write(image_data)
+                
+                # Connect to the SQLite database
+                connection = sqlite3.connect('ecoenergy.db')
+                cursor = connection.cursor()
+                
+                # Insert the appliance and image path into the database
+                query = "INSERT INTO appliance(name, image) VALUES(?, ?);"
+                cursor.execute(query, (appliance, image_name))
+                connection.commit()  # Commit the transaction
+                
+                return f'file://{file_path}'
+            
+            except sqlite3.Error as e:
+                return f"Error: {e}"
+            
+            finally:
+                if cursor:
+                    cursor.close()
+                if connection:
+                    connection.close()
+
+    def appliance_list(self):
+        r = '<img src="monitor.png" class="fluid">'
+        return {'message': r}
+
+
+    def fetch_appliance(self):
+        try:
+            # Connect to the SQLite database (it will create the file if it doesn't exist)
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+            
+            # Execute the query
+            cursor.execute("SELECT * FROM appliance;")
+            rows = cursor.fetchall()  # Fetch all rows from the query result
+            columns = [description[0] for description in cursor.description]  # Get column names
+
+            # Return the fetched data as a string (for simplicity)
+            result = ""
+            for row in rows:
+                row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
+                result += f"""<tr>
+                                <td>{row_data['id']}</td>
+                                <td>{row_data['name']}</td>
+                                <td> <img src="assets/uploads/{row_data['image']}" style="width:60px" />  </td>
+                            </tr>"""
+      
+            return {'message': result}
+        
+        except sqlite3.Error as e:
+            return {'message': f"Error: {e}"}
+        finally:
+            cursor.close()
+            connection.close()
+    
     def fetch_data(self):
         try:
             # Connect to the SQLite database (it will create the file if it doesn't exist)
@@ -18,8 +95,12 @@ class Api:
             result = ""
             for row in rows:
                 row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
-                result += f"ID: {row_data['id']}, Firstname: {row_data['firstname']}, Lastname: {row_data['lastname']}\n"
-            
+                result += f"""<tr>
+                                <td>{row_data['id']}</td>
+                                <td>{row_data['firstname']}</td>
+                                <td>{row_data['lastname']}</td>
+                            </tr>"""
+      
             return {'message': result}
         
         except sqlite3.Error as e:
@@ -41,12 +122,20 @@ class Api:
 
             rows = cursor.fetchall()  # Fetch all rows from the query result
             columns = [description[0] for description in cursor.description]  # Get column names
-
-            # Return the fetched data as a string (for simplicity)
             result = ""
-            for row in rows:
-                row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
-                result += f"ID: {row_data['id']}, Firstname: {row_data['firstname']}, Lastname: {row_data['lastname']}\n"
+            if not rows:
+                result += f"""<tr>
+                                <td style="text-align:center" colspan="3">No data found</td>
+                              </tr>"""
+            else:
+                # Return the fetched data as a string (for simplicity)
+                for row in rows:
+                    row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
+                    result += f"""<tr>
+                                    <td>{row_data['id']}</td>
+                                    <td>{row_data['firstname']}</td>
+                                    <td>{row_data['lastname']}</td>
+                                </tr>"""
             
             return {'message': result}
         
@@ -56,6 +145,10 @@ class Api:
             cursor.close()
             connection.close()
 
+def on_loaded():
+    window.toggle_fullscreen()
+
+
 if __name__ == '__main__':
     api = Api()
     
@@ -64,5 +157,5 @@ if __name__ == '__main__':
     html_path = os.path.join(current_dir, 'index.html')
 
     # Create the window using the external HTML file
-    window = webview.create_window('ECO ENEGERY', html_path, js_api=api)
+    window = webview.create_window('ECO ENEGERY', html_path, js_api=api, width=1000, height=700,)
     webview.start()

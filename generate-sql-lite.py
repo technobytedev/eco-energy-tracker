@@ -7,18 +7,18 @@ connection = sqlite3.connect('ecoenergy.db')
 cursor = connection.cursor()
 
 # Create a `users` table if it doesn't exist
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    firstname TEXT NOT NULL,
-    lastname TEXT NOT NULL
-);
-''')
+# cursor.execute('''
+# CREATE TABLE IF NOT EXISTS appliance (
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
+#     name TEXT NOT NULL,
+#     image TEXT NOT NULL
+# );
+# ''')
 
 # Insert some sample data (optional)
-cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('John', 'Doe');")
-cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('Jane', 'Smith');")
-cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('Alice', 'Johnson');")
+cursor.execute("delete from appliance;")
+# cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('Jane', 'Smith');")
+# cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('Alice', 'Johnson');")
 
 # Commit changes and close the connection
 connection.commit()
