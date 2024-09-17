@@ -43,45 +43,19 @@
             width: 40%;
         }
 
+.droptarget {
+  height: 200px;
+  padding: 5px;
+  border: 1px solid black;
+}
 
     </style>
 </head>
 <body style="padding: 5px;">
-    <nav class="navbar navbar-expand-lg navbar-light  text-white" style="background: #50B498;">
-        <div class="container-fluid">
-            
-            <div>
-                <button class="navbar-toggler text-white" style="color:white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon text-white" style="color:white"></span>
-            </button>
-            <button class="btn btn-light">Compute</button>
-            </div>
-            <a class="navbar-brand text-white" href="index.html">EcoEnergy Tracker</a>
-            <div class="collapse navbar-collapse" id="navbarNavDropdown">
-                <ul class="navbar-nav text-white">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="settings.html">Setting</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown link
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top text-white" id="navBar" style="background: #50B498;"> 
     </nav>
+    <br>
+    <br>
 
     <div class="row mt-1" style="height: 500px;">
         <div class="col-4 bg-white" >
@@ -101,7 +75,7 @@
                 <br><br>
             </div>
         </div>
-        <div class="col-8 bg-light p-3" >
+        <div class="col-8 bg-light p-3" style="height: 100%; overflow-y: auto;">
             <table id="data-table" class="table table-fluid" border="1" style="margin: auto;">
                 <thead>
                     <tr>
@@ -113,27 +87,36 @@
                 <tbody id="table-body">
                 </tbody>
             </table>
-        </div>
-        <div class="col-12 " style="background: #468585;margin: auto; ">
-
-            <center>
-                <div id="applianceList">
-                </div>
-            </center>
-         
-
-
-        </div>
+        </div>  
+        
     </div>
 
 
 
 
+<div class="droptarget" id="applianceList">
+  <!-- <p draggable="true" id="dragtarget">Drag me!</p> -->
+</div>
+
+<div class="droptarget"></div>
+
+<p>Drag the text up and down between the two rectangles.</p>
+
+<p id="demo"></p>
+
+
 <script>
-        window.addEventListener('pywebviewready', function() {
-            var container = document.getElementById('pywebview-status');
-            container.innerHTML = '<i>pywebview</i> is ready';
-        });
+
+
+        function showNavbar() {
+            pywebview.api.navbar().then(getNavbar);
+        }
+
+
+        function getNavbar(response) {
+            const a = document.getElementById('navBar');
+            a.innerHTML = response.message;
+        }
 
 
 
@@ -182,11 +165,93 @@
             // Check if response has any data
         }
 
-                        // Fetch and display all data after a delay
-                        setTimeout(() => {
-                            showData();
-                            showAppliance();
-                        }, 1000);
+        window.addEventListener('pywebviewready', function() {
+            showNavbar();
+            showData();
+            showAppliance();
+        });
+
+</script>
+
+<script>
+
+let draggedElement = null;
+
+// Handle drag start event
+document.addEventListener("dragstart", function(event) {
+  // Store the dragged element reference
+  draggedElement = event.target;
+
+  // Set the dragged data (we can use the element's ID or a reference)
+  event.dataTransfer.setData("Text", event.target.id);
+
+  // Output some text when starting to drag the element
+  document.getElementById("demo").innerHTML = "Started to drag the element.";
+  
+  // Change the opacity of the draggable element
+  event.target.style.opacity = "0.4";
+});
+
+// Change output text color while dragging
+document.addEventListener("drag", function(event) {
+  document.getElementById("demo").style.color = "red";
+});
+
+// Reset opacity and output text when drag ends
+document.addEventListener("dragend", function(event) {
+  document.getElementById("demo").innerHTML = "Finished dragging the element.";
+  event.target.style.opacity = "1";
+});
+
+// Handle drag enter event (change border of the drop target)
+document.addEventListener("dragenter", function(event) {
+  if (event.target.className == "droptarget") {
+    event.target.style.border = "3px dotted red";
+  }
+});
+
+// Allow drop event by preventing the default action
+document.addEventListener("dragover", function(event) {
+  event.preventDefault();
+});
+
+// Handle drag leave event (reset border of the drop target)
+document.addEventListener("dragleave", function(event) {
+  if (event.target.className == "droptarget") {
+    event.target.style.border = "";
+  }
+});
+
+// Handle drop event
+document.addEventListener("drop", function(event) {
+  event.preventDefault();
+  
+  // Only proceed if the drop target has the class 'droptarget'
+  if (event.target.className == "droptarget") {
+    document.getElementById("demo").style.color = "";
+    event.target.style.border = "";
+
+    // Remove the dragged element from its original container (if it has a parent)
+    if (draggedElement && draggedElement.parentNode) {
+      draggedElement.parentNode.removeChild(draggedElement);
+    }
+
+    // Append the dragged element (or a new image) to the drop target
+    event.target.appendChild(draggedElement);
+  }
+});
+
+
+document.addEventListener("drop", function(event) {
+  event.preventDefault();
+  if ( event.target.className == "droptarget" ) {
+    document.getElementById("demo").style.color = "";
+    event.target.style.border = "";
+    var data = event.dataTransfer.getData("Text");
+    event.target.appendChild(document.getElementById(data));
+
+  }
+});
 </script>
 <script>
     //upload image
@@ -208,6 +273,13 @@
 
         setTimeout(() => {
             showData();
+            Swal.fire({
+              position: "top-end",
+              icon: "success",
+              title: "Saved successfully",
+              showConfirmButton: false,
+              timer: 1500
+            });
         }, 2000);
     });
     </script>
@@ -232,5 +304,6 @@
     });
     </script>
     <script src="assets/bootstrap.min.js"></script>
+    <script src="assets/sweetalert.js"></script>
 </body>
 </html>

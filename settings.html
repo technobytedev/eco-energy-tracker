@@ -1,62 +1,86 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
-<head>
-<style>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link href="assets/bootstrap.min.css" rel="stylesheet">
+    <style>
+        nav {
+            margin: 0px;
+        }
+        #response-container {
+            display: none;
+            padding: 1rem;
+            margin: 3rem 5%;
+            font-size: 120%;
+            border: 5px dashed #ccc;
+            word-wrap: break-word;
+        }
+        label {
+            margin-left: 0.3rem;
+            margin-right: 0.3rem;
+        }
+        button {
+            font-size: 100%;
+            padding: 0.5rem;
+            margin: 0.3rem;
+            text-transform: uppercase;
+        }
+        .nav-link {
+            color:white!important;
+        }
+        tr, td {
+            border: 1px solid black;
+        }
+
+
+        /* Define widths for the table columns */
+        #data-table td:nth-child(1) {
+            width: 20%;
+        }
+
+        #data-table td:nth-child(2),
+        #data-table td:nth-child(3) {
+            width: 40%;
+        }
+
 .droptarget {
-  width: 300px; 
-  height: 300px;
-  padding: 10px;
+  height: 200px;
+  padding: 5px;
   border: 1px solid black;
-  display: inline-block;
-  vertical-align: top;
 }
 
-.dragimage {
-  width: 100px;
-  height: 100px;
-  cursor: move;
-}
-</style>
+    </style>
 </head>
-<body>
-<h1>Drag and Drop Image</h1>
+<body style="padding: 5px;">
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top text-white" id="navBar" style="background: #50B498;"> 
+    </nav>
+    <br>
+    <br>
+    <br>
+    <br>
 
-<p>Drag the image between the two rectangles:</p>
 
-<div class="droptarget" ondrop="drop(event)" ondragover="allowDrop(event)">
-  <!-- Initial placeholder for drag target -->
-</div>
-
-<p id="demo"></p>
-
-<div class="droptarget" ondrop="drop(event)" ondragover="allowDrop(event)">
-  <!-- Target for dropping images -->
-  <!-- Image to be dragged -->
-<img src="monitor.png" class="dragimage" id="dragimage" draggable="true" ondragstart="dragStart(event)" />
-</div>
-
+    <div class="row mt-1 bg-light" style="height: 500px;">
+        
+    </div>
 
 
 <script>
-function dragStart(event) {
-  event.dataTransfer.setData("text/plain", event.target.id);
-}
 
-function allowDrop(event) {
-  event.preventDefault();
-}
+        function showNavbar() {
+            pywebview.api.navbar().then(getNavbar);
+        }
 
-function drop(event) {
-  event.preventDefault();
-  const data = event.dataTransfer.getData("text/plain");
-  const draggedImage = document.getElementById(data);
-  
-  // Append the dragged image to the drop target
-  event.target.appendChild(draggedImage);
-  
-  document.getElementById("demo").innerHTML = "The image was dropped";
-}
+        function getNavbar(response) {
+            const a = document.getElementById('navBar');
+            a.innerHTML = response.message;
+        }
+        window.addEventListener('pywebviewready', function() {
+            showNavbar();
+        });
+
 </script>
-
+    <script src="assets/bootstrap.min.js"></script>
+    <script src="assets/sweetalert.js"></script>
 </body>
 </html>
