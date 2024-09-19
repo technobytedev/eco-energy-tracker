@@ -16,9 +16,9 @@ cursor = connection.cursor()
 # ''')
 
 # Insert some sample data (optional)
-cursor.execute("delete from appliance;")
+# cursor.execute("delete from appliance;")
 # cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('Jane', 'Smith');")
-# cursor.execute("INSERT INTO users (firstname, lastname) VALUES ('Alice', 'Johnson');")
+cursor.execute("SELECT * FROM simulation")
 
 # Commit changes and close the connection
 connection.commit()
