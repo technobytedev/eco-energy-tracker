@@ -75,12 +75,8 @@
              </div>
          </div>
     </div>
-
-
-    <div class="col-3">
-        Room1
-        <div class="droptarget" id="room1"></div>
-    </div>
+</div>
+<div class="row m-2" id="roomContainer">
 </div>
 
 <p id="demo"></p>
@@ -101,6 +97,43 @@
 
 <script>
         document.getElementById('applianceContainer').style.display = 'none';
+
+
+        function addToCanvas(sessionId ,roomId, imageId) {
+            pywebview.api.add_appliance_canvas(sessionId ,roomId, imageId).then(canvasShowMessage);
+        }
+
+
+        function canvasShowMessage(response) {
+
+            showRoom();
+            
+            Swal.fire({
+              position: "top-end",
+              icon: response.message ? "success" : "error",
+              title: response.message ? response.message : response.error,
+              showConfirmButton: false,
+              timer: 1500
+            });
+        }
+
+
+        function setID(name, simulationId) {
+
+            localStorage.setItem('sessionName', name)
+            localStorage.setItem('sessionId', simulationId)
+            var sessionName = localStorage.getItem('sessionName');
+            var sessionId = localStorage.getItem('sessionId');
+            document.getElementById('stitle').innerHTML = sessionName
+
+            if(sessionName) {
+                document.getElementById('addRoom').style.display = '';
+            }else {
+                document.getElementById('addRoom').style.display = 'none';
+            }
+
+            showRoom();
+        }
 
         var closeDrawer = document.getElementById('closeDrawer');
         var openDrawer = document.getElementById('openDrawer');
@@ -133,6 +166,17 @@
             a.innerHTML = response.message;
         }
 
+        function showRoom() {
+            var simulationId = localStorage.getItem('sessionId');
+            pywebview.api.fetch_room(simulationId).then(outputRoom);
+        }
+
+        function outputRoom(response) {
+            var a = document.getElementById('roomContainer');
+            a.innerHTML = response.message;
+        }
+
+
         function createRoom() {
             var room = document.getElementById('roomName').value;
             var simulationId = localStorage.getItem('sessionId');
@@ -140,6 +184,8 @@
         }
 
         function roomShowMessage(response) {
+
+            showRoom();
 
             Swal.fire({
               position: "top-end",
@@ -166,6 +212,8 @@
             var sessionId = localStorage.getItem('sessionId');
             document.getElementById('stitle').innerHTML = sessionName
 
+            showRoom();
+
             if(sessionName) {
                 document.getElementById('addRoom').style.display = '';
             }else {
@@ -180,9 +228,6 @@
               timer: 1500
             });
         }
-
-
-
 
         function showAppliance() {
             pywebview.api.appliance_list().then(outputApplianceList);
@@ -207,17 +252,16 @@
             showNavbar();
             showAppliance();
 
-            setTimeout(() => {
-
                 var sessionName = localStorage.getItem('sessionName');
                 document.getElementById('stitle').innerHTML = sessionName
                  if(sessionName) {
-                    document.getElementById('addRoom').style.display = '';
+                    document.getElementById('addRoom').style.display = 'block';
+                    showRoom();
                  }else {
                     document.getElementById('addRoom').style.display = 'none';
 
                  }
-            }, 1000);
+
 
 
         });
@@ -279,7 +323,7 @@ document.addEventListener("drop", function(event) {
   event.preventDefault();
     
 
-  const dropTargetId = event.target.id;
+  const roomId = event.target.id;
   // Only proceed if the drop target has the class 'droptarget'
   if (event.target.className == "droptarget") {
     // document.getElementById("demo").style.color = "";
@@ -287,8 +331,13 @@ document.addEventListener("drop", function(event) {
 
     const imageId = event.dataTransfer.getData("Text");
 
+    var sessionName = localStorage.getItem('sessionName');
+    var sessionId = localStorage.getItem('sessionId');
 
-    alert(dropTargetId)
+    //alert(dropTargetId + " " + imageId)
+
+    //save to canvas table on db
+    addToCanvas(sessionId ,roomId, imageId);
 
     // Remove the dragged element from its original container (if it has a parent)
     // if (draggedElement && draggedElement.parentNode) {

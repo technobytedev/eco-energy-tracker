@@ -7,6 +7,30 @@ import uuid
 class Api:
 
 
+
+    def add_appliance_canvas(self, simulation_id ,room_id, appliance_id):
+        try:
+            # Connect to the SQLite database
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+                
+            # Insert the appliance and image path into the database
+            query = "INSERT INTO canvas(simulation_id, room_id, appliance_id) VALUES(?, ?, ?);"
+            cursor.execute(query, (simulation_id, room_id, appliance_id))
+            connection.commit()  # Commit the transaction
+                
+            return {'message': 'Appliance added to room.'}
+            
+        except sqlite3.Error as e:
+            return {'error': 'Error occured please try again'}
+            
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+
     def create_room(self, room_name, simulation_id):
         try:
             # Connect to the SQLite database
@@ -112,7 +136,7 @@ class Api:
                 
                 <div class="dropdown col-md-1 d-flex align-items-center">
                     
-                        <img id="s{row_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" draggable="true" id="{row_data['id']}" style="width:90px" src="assets/uploads/{row_data['image']}" style="width:60px" />
+                    <img draggable="false" id="s{row_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" id="{row_data['id']}" style="width:90px" src="assets/uploads/{row_data['image']}" style="width:60px" />
                     
                     <ul class="dropdown-menu" style="background:lightgray" aria-labelledby="s{row_data['id']}">
                     <div class="d-flex p-2 text-center">
@@ -138,15 +162,33 @@ class Api:
             connection.close()
 
     def navbar(self):
-        r = ''' <div class="container-fluid">
+
+        # Connect to the SQLite database (it will create the file if it doesn't exist)
+        connection = sqlite3.connect('ecoenergy.db')
+        cursor = connection.cursor()
+            
+        # Execute the query
+        cursor.execute("SELECT * FROM simulation;")
+        rows = cursor.fetchall()  # Fetch all rows from the query result
+        columns = [description[0] for description in cursor.description]  # Get column names
+
+        # Return the fetched data as a string (for simplicity)
+
+        r = ""
+
+        simulations = ""
+
+        for row in rows:
+            row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
+            simulations += f"""
+                         <li><p onclick="setID('{row_data['name']}', '{row_data['id']}');" class="text-white" >{row_data['name']}</p></li>
+                        """
+        r += """<div class="container-fluid">
             
             <div >
                 <button class="navbar-toggler text-white" style="color:white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon text-white" style="color:white"></span>
                 </button>
-            
-
-
 
             </div>
             
@@ -160,16 +202,18 @@ class Api:
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown link
+                            Recents
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        <ul class="dropdown-menu p-2 text-white" aria-labelledby="navbarDropdownMenuLink" style="background:#CE3A00">
+                        """
+        r +=   simulations
+
+        r += """
                         </ul>
                     </li>
                 </ul>
             </div>
+
 
             <div class="row">
             <div class="col-6">
@@ -188,11 +232,12 @@ class Api:
              </div>
             </div>
             </div>
-
             
-             <a class="navbar-brand text-white" href="index.html">EcoEnergy Tracker</a>
+             <a class="navbar-brand text-white" href="index.html">Eco Energy Tracker</a>
 
-        </div>'''
+        </div>"""
+
+
         return {'message': r}
 
 
@@ -224,6 +269,69 @@ class Api:
         finally:
             cursor.close()
             connection.close()
+
+    def fetch_room(self, simulation_id):
+        try:
+            # Connect to the SQLite database (it will create the file if it doesn't exist)
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+            
+            # Query to search name
+            query = """SELECT room.id AS roomId, room.name AS roomName, appliance.image AS applianceImage, appliance.id AS applianceImageId, simulation.* FROM canvas 
+            INNER JOIN room ON room.id = canvas.room_id
+            INNER JOIN appliance ON appliance.id = canvas.appliance_id
+            INNER JOIN simulation ON simulation.id = canvas.simulation_id WHERE canvas.simulation_id = ?;"""
+            cursor.execute(query, (simulation_id,))
+            rows = cursor.fetchall()  # Fetch all rows from the query result
+
+            columns = [description[0] for description in cursor.description]  # Get column names
+
+            # Fetch all rooms
+            query_rooms = """SELECT id AS roomId, name AS roomName FROM room WHERE simulation_id = ?;"""
+            cursor.execute(query_rooms, (simulation_id,))
+            rooms = cursor.fetchall()
+
+            # Group images by roomId
+            grouped_data = {}
+            for row in rows:
+                row_data = {columns[i]: row[i] for i in range(len(row))}
+                room_id = row_data['roomId']
+                if room_id not in grouped_data:
+                    grouped_data[room_id] = {
+                        'roomName': row_data['roomName'],
+                        'images': []
+                    }
+                grouped_data[room_id]['images'].append((row_data['applianceImage'], row_data['applianceImageId']))
+
+            # Generate HTML
+            result = ""
+            for room in rooms:
+                room_id = room[0]
+                room_name = room[1]
+                images_html = ""
+                if room_id in grouped_data:
+                    images_html = "".join(
+                        f'<img draggable="true" id="{image_id}" src="assets/uploads/{image}" style="width:60px" />' for image, image_id in grouped_data[room_id]['images']
+                    )
+                result += f"""<div class="col-3">
+                                {room_name}
+                                <div class="droptarget" id="{room_id}">
+                                    {images_html}
+                                </div>
+                            </div>"""
+
+            return {'message': result}
+        
+        except sqlite3.Error as e:
+            return {'error': f"Error: {e}"}
+        finally:
+            cursor.close()
+            connection.close()
+
+
+
+
+
     
     def fetch_data(self):
         try:

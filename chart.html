@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html>
+<head>  
+<script>
+window.onload = function () {
+
+function calculateTotalWatts(dataPoints) {
+	let total = 0;
+	for (let i = 0; i < dataPoints.length; i++) {
+		total += dataPoints[i].y;
+	}
+	return total;
+}
+
+var refrigeratorDataPoints = [
+	{ x: 1, y: 150 },
+	{ x: 2, y: 150 },
+	{ x: 3, y: 145 },
+	{ x: 4, y: 145 },
+	{ x: 5, y: 150 },
+	{ x: 6, y: 148 },
+	{ x: 7, y: 145 }
+];
+
+var washingMachineDataPoints = [
+	{ x: 1, y: 500 },
+	{ x: 2, y: 500 },
+	{ x: 3, y: 520 },
+	{ x: 4, y: 520 },
+	{ x: 5, y: 520 },
+	{ x: 6, y: 520 },
+	{ x: 7, y: 520 }
+];
+
+var microwaveDataPoints = [
+	{ x: 1, y: 1000 },
+	{ x: 2, y: 950 },
+	{ x: 3, y: 980 },
+	{ x: 4, y: 990 },
+	{ x: 5, y: 990 },
+	{ x: 6, y: 980 },
+	{ x: 7, y: 980 }
+];
+
+var chart = new CanvasJS.Chart("chartContainer", {
+	animationEnabled: true,
+	animationDuration: 10000, // Set animation duration to 5 seconds (5000 milliseconds)
+	title:{
+		text: "Hourly Electricity Usage of Different Appliances"
+	},
+	axisX: {
+		title: "Time (in hours)",
+		interval: 1
+	},
+	axisY: {
+		title: "Electricity Usage (in Watts)",
+		suffix: " W"
+	},
+	legend:{
+		cursor: "pointer",
+		fontSize: 16,
+		itemclick: toggleDataSeries
+	},
+	toolTip:{
+		shared: true
+	},
+	data: [{
+		name: "Refrigerator (Total: " + calculateTotalWatts(refrigeratorDataPoints) + " W)",
+		type: "spline",
+		yValueFormatString: "#0.## W",
+		showInLegend: true,
+		dataPoints: refrigeratorDataPoints
+	},
+	{
+		name: "Washing Machine (Total: " + calculateTotalWatts(washingMachineDataPoints) + " W)",
+		type: "spline",
+		yValueFormatString: "#0.## W",
+		showInLegend: true,
+		dataPoints: washingMachineDataPoints
+	},
+	{
+		name: "Microwave (Total: " + calculateTotalWatts(microwaveDataPoints) + " W)",
+		type: "spline",
+		yValueFormatString: "#0.## W",
+		showInLegend: true,
+		dataPoints: microwaveDataPoints
+	}]
+});
+chart.render();
+
+function toggleDataSeries(e){
+	if (typeof(e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+		e.dataSeries.visible = false;
+	}
+	else{
+		e.dataSeries.visible = true;
+	}
+	chart.render();
+}
+
+function toggleAppliance(appliance, hour) {
+	let dataPoints;
+	switch(appliance) {
+		case 'refrigerator':
+			dataPoints = refrigeratorDataPoints;
+			break;
+		case 'washingMachine':
+			dataPoints = washingMachineDataPoints;
+			break;
+		case 'microwave':
+			dataPoints = microwaveDataPoints;
+			break;
+	}
+	for (let i = hour - 1; i < dataPoints.length; i++) {
+		dataPoints[i].y = 0;
+	}
+	updateChart();
+}
+
+function updateChart() {
+	chart.options.data[0].name = "Refrigerator (Total: " + calculateTotalWatts(refrigeratorDataPoints) + " W)";
+	chart.options.data[1].name = "Washing Machine (Total: " + calculateTotalWatts(washingMachineDataPoints) + " W)";
+	chart.options.data[2].name = "Microwave (Total: " + calculateTotalWatts(microwaveDataPoints) + " W)";
+	chart.render();
+}
+
+document.getElementById("toggleRefrigerator").addEventListener("click", function() {
+	toggleAppliance('refrigerator', 2);
+});
+
+document.getElementById("toggleWashingMachine").addEventListener("click", function() {
+	toggleAppliance('washingMachine', 2);
+});
+
+document.getElementById("toggleMicrowave").addEventListener("click", function() {
+	toggleAppliance('microwave', 2);
+});
+
+}
+</script>
+</head>
+<body>
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+<button id="toggleRefrigerator">Toggle Refrigerator</button>
+<button id="toggleWashingMachine">Toggle Washing Machine</button>
+<button id="toggleMicrowave">Toggle Microwave</button>
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+</body>
+</html>
