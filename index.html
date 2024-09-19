@@ -43,71 +43,86 @@
             width: 40%;
         }
 
-.droptarget {
-  height: 200px;
-  padding: 5px;
-  border: 1px solid black;
-}
+    .droptarget {
+    height: 200px;
+    padding: 5px;
+    border: 1px solid black;
+    }
 
     </style>
 </head>
 <body style="padding: 5px;">
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top text-white" id="navBar" style="background: #50B498;"> 
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top text-white" id="navBar" style="background: #FFAA33;"> 
     </nav>
     <br>
-    <br>
+    <br><br>
 
-    <div class="row mt-1" style="height: 500px;">
-        <div class="col-4 bg-white" >
-            <div style="width: 100%; margin: auto; padding: 15px;color: #4e4e4e;">
-                <h3>Search Appliance:</h3>
-                <input type="text" id="searchByName" class="form-control mb-2">
-                <hr>
-                <h1>Upload and Display Image</h1>
-                 Appliance Name:
-                <input type="text" id="appliance" class="form-control mb-2">
-                 Image:
-                <img id="imagePreview" src="" alt="Image will be displayed here" style="max-width: 90px; height: auto;">
-                <input type="file" id="fileInput" accept="image/*" class="form-control mb-2">
-                <div class="d-grid">
-                    <input type="submit" class="btn btn-primary btn-block" id="uploadButton" value="Upload">
-                </div>
-                <br><br>
-            </div>
-        </div>
-        <div class="col-8 bg-light p-3" style="height: 100%; overflow-y: auto;">
-            <table id="data-table" class="table table-fluid" border="1" style="margin: auto;">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Firstname</th>
-                        <th>Lastname</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                </tbody>
-            </table>
-        </div>  
-        
+
+
+<div class="row m-2">
+    <div class="col-12">
+         <div class="d-flex">
+            <h1 id="stitle"></h1>
+              <div class="dropdown" id="addRoom">
+    
+                    <button data-bs-toggle="dropdown" aria-expanded="false" class="btn text-white"><img style="width:25px" src="plus.png" class="fluid"></button>
+                    <ul class="dropdown-menu" aria-labelledby="addRoom" style="background:#CE3A00">
+                    <div class="p-2">
+                        <input class="form-control" id="roomName" placeholder="Room Name"  />
+                        <input class="btn btn-light mt-2 form-control" type="submit" onclick="createRoom()" value="+ Create" />
+                    </div>
+                    </ul>
+             </div>
+         </div>
     </div>
 
 
-
-
-<div class="droptarget" id="applianceList">
-  <!-- <p draggable="true" id="dragtarget">Drag me!</p> -->
+    <div class="col-3">
+        Room1
+        <div class="droptarget" id="room1"></div>
+    </div>
 </div>
-
-<div class="droptarget"></div>
-
-<p>Drag the text up and down between the two rectangles.</p>
 
 <p id="demo"></p>
 
+<br><br><br><br><br><br><br><br><br><br><br><br>
+
+<footer class="footer mt-auto py-1 fixed-bottom" style="background: #FFAA33!important;">
+    <center>
+        <img src="arrow-up.png" id="openDrawer" style="width: 50px;">
+        <img src="down.png" id="closeDrawer" style="width: 50px;">
+    </center>
+    <div class="container" id="applianceContainer">
+        <div id="applianceList" class="row">
+        </div>
+    </div>
+</footer>
+
 
 <script>
+        document.getElementById('applianceContainer').style.display = 'none';
 
+        var closeDrawer = document.getElementById('closeDrawer');
+        var openDrawer = document.getElementById('openDrawer');
 
+        closeDrawer.style.display = 'none';
+
+        // toggle drawer
+        var open = document.getElementById('openDrawer')
+        open.addEventListener("click", toggleDrawerOpen);
+        function toggleDrawerOpen() {
+            document.getElementById('applianceContainer').style.display = 'block';
+            openDrawer.style.display = 'none';
+            closeDrawer.style.display = 'block';
+        }
+        var close = document.getElementById('closeDrawer')
+        close.addEventListener("click", toggleDrawerClose);
+        function toggleDrawerClose() {
+            document.getElementById('applianceContainer').style.display = 'none';
+            openDrawer.style.display = 'block';
+            closeDrawer.style.display = 'none';
+        }
+        
         function showNavbar() {
             pywebview.api.navbar().then(getNavbar);
         }
@@ -117,6 +132,55 @@
             const a = document.getElementById('navBar');
             a.innerHTML = response.message;
         }
+
+        function createRoom() {
+            var room = document.getElementById('roomName').value;
+            var simulationId = localStorage.getItem('sessionId');
+            pywebview.api.create_room(room, simulationId).then(roomShowMessage);
+        }
+
+        function roomShowMessage(response) {
+
+            Swal.fire({
+              position: "top-end",
+              icon: response.message ? "success" : "error",
+              title: response.message ? response.message : response.error,
+              showConfirmButton: false,
+              timer: 1500
+            });
+        }
+
+
+        function createSimulation() {
+            var name = document.getElementById('simulationName').value;
+            pywebview.api.create_simulation(name).then(simulationShowMessage);
+
+        }
+
+        function simulationShowMessage(response) {
+
+            var name = document.getElementById('simulationName').value;
+            localStorage.setItem('sessionName', name)
+            localStorage.setItem('sessionId', response.session_id)
+            var sessionName = localStorage.getItem('sessionName');
+            var sessionId = localStorage.getItem('sessionId');
+            document.getElementById('stitle').innerHTML = sessionName
+
+            if(sessionName) {
+                document.getElementById('addRoom').style.display = '';
+            }else {
+                document.getElementById('addRoom').style.display = 'none';
+            }
+
+            Swal.fire({
+              position: "top-end",
+              icon: response.message ? "success" : "error",
+              title: response.message ? response.message : response.error,
+              showConfirmButton: false,
+              timer: 1500
+            });
+        }
+
 
 
 
@@ -130,32 +194,6 @@
             a.innerHTML = response.message;
         }
 
-
-        // Listener event for search
-        const s = document.getElementById('searchByName');
-        s.addEventListener("keyup", searchInputBlank);
-
-        function searchInputBlank() {
-            const search = document.getElementById('searchByName').value;
-            if (search === '') {
-                // Call show all data if search is empty
-                showData();
-            } else {
-                searchByName();
-            }
-        }
-
-        // Fetch and display all data
-        function showData() {
-            pywebview.api.fetch_appliance().then(showResponse);
-        }
-
-        // Search by name
-        function searchByName() {
-            const name = document.getElementById('searchByName').value;
-            pywebview.api.search_data(name).then(showResponse);
-        }
-
         // Display response in an HTML table
         function showResponse(response) {
 
@@ -167,8 +205,21 @@
 
         window.addEventListener('pywebviewready', function() {
             showNavbar();
-            showData();
             showAppliance();
+
+            setTimeout(() => {
+
+                var sessionName = localStorage.getItem('sessionName');
+                document.getElementById('stitle').innerHTML = sessionName
+                 if(sessionName) {
+                    document.getElementById('addRoom').style.display = '';
+                 }else {
+                    document.getElementById('addRoom').style.display = 'none';
+
+                 }
+            }, 1000);
+
+
         });
 
 </script>
@@ -180,26 +231,27 @@ let draggedElement = null;
 // Handle drag start event
 document.addEventListener("dragstart", function(event) {
   // Store the dragged element reference
-  draggedElement = event.target;
+//   draggedElement = event.target;
 
   // Set the dragged data (we can use the element's ID or a reference)
   event.dataTransfer.setData("Text", event.target.id);
+  
 
   // Output some text when starting to drag the element
-  document.getElementById("demo").innerHTML = "Started to drag the element.";
+//   document.getElementById("demo").innerHTML = "Started to drag the element.";
   
   // Change the opacity of the draggable element
-  event.target.style.opacity = "0.4";
+//   event.target.style.opacity = "0.4";
 });
 
 // Change output text color while dragging
 document.addEventListener("drag", function(event) {
-  document.getElementById("demo").style.color = "red";
+//   document.getElementById("demo").style.color = "red";
 });
 
 // Reset opacity and output text when drag ends
 document.addEventListener("dragend", function(event) {
-  document.getElementById("demo").innerHTML = "Finished dragging the element.";
+//   document.getElementById("demo").innerHTML = "Finished dragging the element.";
   event.target.style.opacity = "1";
 });
 
@@ -225,16 +277,23 @@ document.addEventListener("dragleave", function(event) {
 // Handle drop event
 document.addEventListener("drop", function(event) {
   event.preventDefault();
-  
+    
+
+  const dropTargetId = event.target.id;
   // Only proceed if the drop target has the class 'droptarget'
   if (event.target.className == "droptarget") {
-    document.getElementById("demo").style.color = "";
+    // document.getElementById("demo").style.color = "";
     event.target.style.border = "";
 
+    const imageId = event.dataTransfer.getData("Text");
+
+
+    alert(dropTargetId)
+
     // Remove the dragged element from its original container (if it has a parent)
-    if (draggedElement && draggedElement.parentNode) {
-      draggedElement.parentNode.removeChild(draggedElement);
-    }
+    // if (draggedElement && draggedElement.parentNode) {
+    //   draggedElement.parentNode.removeChild(draggedElement);
+    // }
 
     // Append the dragged element (or a new image) to the drop target
     event.target.appendChild(draggedElement);
@@ -242,67 +301,10 @@ document.addEventListener("drop", function(event) {
 });
 
 
-document.addEventListener("drop", function(event) {
-  event.preventDefault();
-  if ( event.target.className == "droptarget" ) {
-    document.getElementById("demo").style.color = "";
-    event.target.style.border = "";
-    var data = event.dataTransfer.getData("Text");
-    event.target.appendChild(document.getElementById(data));
 
-  }
-});
+
 </script>
-<script>
-    //upload image
-    document.getElementById('uploadButton').addEventListener('click', async function (event) {
-        var file = document.getElementById('fileInput').files[0];
-        var appliance = document.getElementById('appliance').value;
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            var base64Image = e.target.result.split(',')[1];
-            window.pywebview.api.upload_image(base64Image, appliance).then(function (response) {
-                document.getElementById('image').src = response;
-            });
-        };
-        reader.readAsDataURL(file);
 
-        document.getElementById('fileInput').value = '';
-        document.getElementById('appliance').value = ''; 
-        document.getElementById('imagePreview').style.display = 'none'; 
-
-        setTimeout(() => {
-            showData();
-            Swal.fire({
-              position: "top-end",
-              icon: "success",
-              title: "Saved successfully",
-              showConfirmButton: false,
-              timer: 1500
-            });
-        }, 2000);
-    });
-    </script>
-    <script>
-    document.getElementById('imagePreview').style.display = 'none';
-    document.getElementById('fileInput').addEventListener('change', function(event) {
-        var file = document.getElementById('fileInput').files[0];  // Get selected file
-        var appliance = document.getElementById('appliance').value;  // Get appliance name
-        
-        if (file) {
-            var reader = new FileReader();
-            
-            // Once the file is read as Data URL (base64), display the preview
-            reader.onload = function(e) {
-                var preview = document.getElementById('imagePreview');
-                preview.src = e.target.result;  // Set the base64 data as the image source
-                preview.style.display = 'block';  // Show the image preview
-            };
-            
-            reader.readAsDataURL(file);  // Read the file as base64 Data URL
-        }
-    });
-    </script>
     <script src="assets/bootstrap.min.js"></script>
     <script src="assets/sweetalert.js"></script>
 </body>

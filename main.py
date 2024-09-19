@@ -6,6 +6,53 @@ import uuid
 
 class Api:
 
+
+    def create_room(self, room_name, simulation_id):
+        try:
+            # Connect to the SQLite database
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+                
+            # Insert the appliance and image path into the database
+            query = "INSERT INTO room(name, simulation_id) VALUES(?, ?);"
+            cursor.execute(query, (room_name, simulation_id))
+            connection.commit()  # Commit the transaction
+                
+            return {'message': 'Room created successfully.'}
+            
+        except sqlite3.Error as e:
+            return {'error': 'Error occured please try again'}
+            
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+
+    def create_simulation(self, name):
+        try:
+            # Connect to the SQLite database
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+                
+            # Insert the appliance and image path into the database
+            query = "INSERT INTO simulation(name) VALUES(?);"
+            cursor.execute(query, (name,))
+            connection.commit()  # Commit the transaction
+            session_id = cursor.lastrowid
+                
+            return {'message': 'Simulation created successfully.', 'session_id': session_id}
+            
+        except sqlite3.Error as e:
+            return {'error': 'Error occured please try again'}
+            
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
     def upload_image(self, base64_image, appliance):
             try:
                 # Decode the base64 image
@@ -47,20 +94,62 @@ class Api:
                     connection.close()
 
     def appliance_list(self):
-        r = '<img src="monitor.png" class="fluid" draggable="true" id="dragtarget">'
-        # r = '<p draggable="true" id="dragtarget">Drag me!</p>'
-        return {'message': r}
+        try:
+            # Connect to the SQLite database (it will create the file if it doesn't exist)
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+            
+            # Execute the query
+            cursor.execute("SELECT * FROM appliance;")
+            rows = cursor.fetchall()  # Fetch all rows from the query result
+            columns = [description[0] for description in cursor.description]  # Get column names
+
+            # Return the fetched data as a string (for simplicity)
+            result = ""
+            for row in rows:
+                row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
+                result += f"""
+                
+                <div class="dropdown col-md-1 d-flex align-items-center">
+                    
+                        <img id="s{row_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" draggable="true" id="{row_data['id']}" style="width:90px" src="assets/uploads/{row_data['image']}" style="width:60px" />
+                    
+                    <ul class="dropdown-menu" style="background:lightgray" aria-labelledby="s{row_data['id']}">
+                    <div class="d-flex p-2 text-center">
+                        <div>Monitor(50W)
+                        <img draggable="true" id="{row_data['id']}" style="width:90px;margin:15px" src="assets/uploads/{row_data['image']}"/>
+                        </div>
+                        <div>Monitor(50W)
+                        <img draggable="true" id="{row_data['id']}" style="width:90px;margin:15px" src="assets/uploads/{row_data['image']}"/>
+                        </div>
+                         <div>Monitor(50W)
+                        <img draggable="true" id="{row_data['id']}" style="width:90px;margin:15px" src="assets/uploads/{row_data['image']}"/>
+                        </div>
+                    </ul>
+                </div>
+                """
+      
+            return {'message': result}
+        
+        except sqlite3.Error as e:
+            return {'message': f"Error: {e}"}
+        finally:
+            cursor.close()
+            connection.close()
 
     def navbar(self):
         r = ''' <div class="container-fluid">
             
-            <div>
+            <div >
                 <button class="navbar-toggler text-white" style="color:white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon text-white" style="color:white"></span>
-            </button>
-            <button class="btn btn-light">Compute</button>
+                </button>
+            
+
+
+
             </div>
-            <a class="navbar-brand text-white" href="index.html">EcoEnergy Tracker</a>
+            
             <div class="collapse navbar-collapse" id="navbarNavDropdown">
                 <ul class="navbar-nav text-white">
                     <li class="nav-item">
@@ -81,6 +170,28 @@ class Api:
                     </li>
                 </ul>
             </div>
+
+            <div class="row">
+            <div class="col-6">
+            <button class="btn text-white" style="background:#CE3A00">Compute</button>
+            </div>
+            <div class="col-6">
+            <div class="dropdown">
+    
+                    <button data-bs-toggle="dropdown" aria-expanded="false" class="btn text-white"><img style="width:25px" src="plus.png" class="fluid"></button>
+                    <ul class="dropdown-menu" aria-labelledby="addRoom" style="background:#CE3A00">
+                    <div class="p-2">
+                        <input class="form-control" id="simulationName" placeholder="Simulation Label"  />
+                        <input class="btn btn-light mt-2 form-control" type="submit" onclick="createSimulation()" value="+ Create" />
+                    </div>
+                    </ul>
+             </div>
+            </div>
+            </div>
+
+            
+             <a class="navbar-brand text-white" href="index.html">EcoEnergy Tracker</a>
+
         </div>'''
         return {'message': r}
 
