@@ -7,6 +7,52 @@ import uuid
 class Api:
 
 
+    def delete_appliance_canvas(self, canvas_id):
+        try:
+            # Connect to the SQLite database
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+                
+            # Insert the appliance and image path into the database
+            query = "DELETE FROM canvas WHERE id = ?;"
+            cursor.execute(query, (canvas_id,))
+            connection.commit()  # Commit the transaction
+                
+            return {'message': 'Removed successfully.'}
+            
+        except sqlite3.Error as e:
+            return {'error': 'Error occured please try again'}
+            
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+
+    def update_appliance_canvas(self, simulation_id ,room_id, appliance_id, from_room, canvas_id):
+        try:
+            # Connect to the SQLite database
+            connection = sqlite3.connect('ecoenergy.db')
+            cursor = connection.cursor()
+                
+            # Insert the appliance and image path into the database
+            query = "UPDATE canvas SET room_id = ? WHERE id = ?;"
+            cursor.execute(query, (room_id, canvas_id))
+            connection.commit()  # Commit the transaction
+                
+            return {'message': 'Transfered successfully.'}
+            
+        except sqlite3.Error as e:
+            return {'error': 'Error occured please try again'}
+            
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+
 
     def add_appliance_canvas(self, simulation_id ,room_id, appliance_id):
         try:
@@ -136,7 +182,7 @@ class Api:
                 
                 <div class="dropdown col-md-1 d-flex align-items-center">
                     
-                    <img draggable="false" id="s{row_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" id="{row_data['id']}" style="width:90px" src="assets/uploads/{row_data['image']}" style="width:60px" />
+                    <img draggable="false" data-is-update="0" id="s{row_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" id="{row_data['id']}" style="width:90px" src="assets/uploads/{row_data['image']}" style="width:60px" />
                     
                     <ul class="dropdown-menu" style="background:lightgray" aria-labelledby="s{row_data['id']}">
                     <div class="d-flex p-2 text-center">
@@ -272,22 +318,26 @@ class Api:
 
     def fetch_room(self, simulation_id):
         try:
-            # Connect to the SQLite database (it will create the file if it doesn't exist)
+            # Connect to the SQLite database
             connection = sqlite3.connect('ecoenergy.db')
             cursor = connection.cursor()
             
-            # Query to search name
-            query = """SELECT room.id AS roomId, room.name AS roomName, appliance.image AS applianceImage, appliance.id AS applianceImageId, simulation.* FROM canvas 
+            # Query to fetch room and canvas details
+            query = """SELECT room.id AS roomId, room.name AS roomName, appliance.image AS applianceImage, 
+            appliance.id AS applianceImageId, simulation.*, canvas.id AS canvasRow
+            FROM canvas 
             INNER JOIN room ON room.id = canvas.room_id
             INNER JOIN appliance ON appliance.id = canvas.appliance_id
-            INNER JOIN simulation ON simulation.id = canvas.simulation_id WHERE canvas.simulation_id = ?;"""
+            INNER JOIN simulation ON simulation.id = canvas.simulation_id 
+            WHERE canvas.simulation_id = ?;"""
             cursor.execute(query, (simulation_id,))
             rows = cursor.fetchall()  # Fetch all rows from the query result
 
             columns = [description[0] for description in cursor.description]  # Get column names
 
             # Fetch all rooms
-            query_rooms = """SELECT id AS roomId, name AS roomName FROM room WHERE simulation_id = ?;"""
+            query_rooms = """SELECT room.id AS roomId, room.name AS roomName FROM room
+                             WHERE room.simulation_id = ?;"""
             cursor.execute(query_rooms, (simulation_id,))
             rooms = cursor.fetchall()
 
@@ -296,12 +346,16 @@ class Api:
             for row in rows:
                 row_data = {columns[i]: row[i] for i in range(len(row))}
                 room_id = row_data['roomId']
+                canvas_id = row_data['canvasRow']  # Fetch the canvas.id
+                
                 if room_id not in grouped_data:
                     grouped_data[room_id] = {
                         'roomName': row_data['roomName'],
+                        'canvasRow': canvas_id,
                         'images': []
                     }
-                grouped_data[room_id]['images'].append((row_data['applianceImage'], row_data['applianceImageId']))
+                # Append image, image_id, and canvas_id to the list of images
+                grouped_data[room_id]['images'].append((row_data['applianceImage'], row_data['applianceImageId'], canvas_id))
 
             # Generate HTML
             result = ""
@@ -311,7 +365,8 @@ class Api:
                 images_html = ""
                 if room_id in grouped_data:
                     images_html = "".join(
-                        f'<img draggable="true" id="{image_id}" src="assets/uploads/{image}" style="width:60px" />' for image, image_id in grouped_data[room_id]['images']
+                        f'<img draggable="true" data-is-update="1" data-canvas-id="{canvas_id}" data-custom-id="{room_id}" id="{image_id}" src="assets/uploads/{image}" style="width:60px" />' 
+                        for image, image_id, canvas_id in grouped_data[room_id]['images']
                     )
                 result += f"""<div class="col-3">
                                 {room_name}
@@ -327,6 +382,7 @@ class Api:
         finally:
             cursor.close()
             connection.close()
+
 
 
 

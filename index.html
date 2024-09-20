@@ -49,6 +49,13 @@
     border: 1px solid black;
     }
 
+    #droptarget {
+    height: 50px;
+    padding: 5px;
+    border: none!important;
+
+    }
+
     </style>
 </head>
 <body style="padding: 5px;">
@@ -79,9 +86,17 @@
 <div class="row m-2" id="roomContainer">
 </div>
 
+
+
+
 <p id="demo"></p>
 
-<br><br><br><br><br><br><br><br><br><br><br><br>
+
+
+<img src="delete.png"  class="droptarget" id="delete" style="width:50px;height:50px;margin-left:15px;border:none!important">
+
+
+<br><br><br><br><br><br><br>
 
 <footer class="footer mt-auto py-1 fixed-bottom" style="background: #FFAA33!important;">
     <center>
@@ -97,6 +112,14 @@
 
 <script>
         document.getElementById('applianceContainer').style.display = 'none';
+
+        function updateCanvas(sessionId ,roomId, imageId, fromRoom, canvasId) {
+            pywebview.api.update_appliance_canvas(sessionId ,roomId, imageId, fromRoom, canvasId).then(canvasShowMessage);
+        }
+
+        function removeFromCanvas(canvasId) {
+            pywebview.api.delete_appliance_canvas(canvasId).then(canvasShowMessage);
+        }
 
 
         function addToCanvas(sessionId ,roomId, imageId) {
@@ -279,6 +302,9 @@ document.addEventListener("dragstart", function(event) {
 
   // Set the dragged data (we can use the element's ID or a reference)
   event.dataTransfer.setData("Text", event.target.id);
+  event.dataTransfer.setData("custom_id", event.target.dataset.customId);
+  event.dataTransfer.setData("is_update", event.target.dataset.isUpdate);
+  event.dataTransfer.setData("canvas_id", event.target.dataset.canvasId);
   
 
   // Output some text when starting to drag the element
@@ -324,20 +350,47 @@ document.addEventListener("drop", function(event) {
     
 
   const roomId = event.target.id;
+
   // Only proceed if the drop target has the class 'droptarget'
   if (event.target.className == "droptarget") {
     // document.getElementById("demo").style.color = "";
     event.target.style.border = "";
 
     const imageId = event.dataTransfer.getData("Text");
+    const fromRoom = event.dataTransfer.getData("custom_id");
+    const isUpdate = event.dataTransfer.getData("is_update");
+    const canvasId = event.dataTransfer.getData("canvas_id");
 
     var sessionName = localStorage.getItem('sessionName');
     var sessionId = localStorage.getItem('sessionId');
 
-    //alert(dropTargetId + " " + imageId)
+
+    //dont accept drag drop if same room, and logic for updating or adding
+
+
+    if(roomId != 'delete') {
+
+        if(fromRoom !== roomId) {
+
+            if(isUpdate == '1') {
+
+                updateCanvas(sessionId ,roomId, imageId, fromRoom, canvasId);
+                
+            }else {
+
+                addToCanvas(sessionId ,roomId, imageId);   
+
+            }
+        }
+
+    }else {
+        removeFromCanvas(canvasId);
+    }
+
+
 
     //save to canvas table on db
-    addToCanvas(sessionId ,roomId, imageId);
+    //addToCanvas(sessionId ,roomId, imageId);
 
     // Remove the dragged element from its original container (if it has a parent)
     // if (draggedElement && draggedElement.parentNode) {
