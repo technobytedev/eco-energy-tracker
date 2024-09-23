@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head lang="en">
     <meta charset="UTF-8">
     <link href="assets/bootstrap.min.css" rel="stylesheet">
@@ -7,6 +8,7 @@
         nav {
             margin: 0px;
         }
+
         #response-container {
             display: none;
             padding: 1rem;
@@ -15,20 +17,25 @@
             border: 5px dashed #ccc;
             word-wrap: break-word;
         }
+
         label {
             margin-left: 0.3rem;
             margin-right: 0.3rem;
         }
+
         button {
             font-size: 100%;
             padding: 0.5rem;
             margin: 0.3rem;
             text-transform: uppercase;
         }
+
         .nav-link {
-            color:white!important;
+            color: white !important;
         }
-        tr, td {
+
+        tr,
+        td {
             border: 1px solid black;
         }
 
@@ -43,78 +50,81 @@
             width: 40%;
         }
 
-    .droptarget {
-    height: 200px;
-    padding: 5px;
-    border: 1px solid black;
-    }
+        .droptarget {
+            height: 200px;
+            padding: 5px;
+            border: 1px solid black;
+        }
 
-    #droptarget {
-    height: 50px;
-    padding: 5px;
-    border: none!important;
+        #droptarget {
+            height: 50px;
+            padding: 5px;
+            border: none !important;
 
-    }
-
+        }
     </style>
 </head>
+
 <body style="padding: 5px;">
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top text-white" id="navBar" style="background: #FFAA33;"> 
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top text-white" id="navBar" style="background: #FFAA33;">
     </nav>
     <br>
     <br><br>
 
 
 
-<div class="row m-2">
-    <div class="col-12">
-         <div class="d-flex">
-            <h1 id="stitle"></h1>
-              <div class="dropdown" id="addRoom">
-    
-                    <button data-bs-toggle="dropdown" aria-expanded="false" class="btn text-white"><img style="width:25px" src="plus.png" class="fluid"></button>
+    <div class="row m-2">
+        <div class="col-12">
+            <div class="d-flex">
+                <h1 id="stitle"></h1>
+                <div class="dropdown" id="addRoom">
+
+                    <button data-bs-toggle="dropdown" aria-expanded="false" class="btn text-white"><img
+                            style="width:25px" src="plus.png" class="fluid"></button>
                     <ul class="dropdown-menu" aria-labelledby="addRoom" style="background:#CE3A00">
-                    <div class="p-2">
-                        <input class="form-control" id="roomName" placeholder="Room Name"  />
-                        <input class="btn btn-light mt-2 form-control" type="submit" onclick="createRoom()" value="+ Create" />
-                    </div>
+                        <div class="p-2">
+                            <input class="form-control" id="roomName" placeholder="Room Name" />
+                            <input class="btn btn-light mt-2 form-control" type="submit" onclick="createRoom()"
+                                value="+ Create" />
+                        </div>
                     </ul>
-             </div>
-         </div>
-    </div>
-</div>
-<div class="row m-2" id="roomContainer">
-</div>
-
-
-
-
-<p id="demo"></p>
-
-
-
-<img src="delete.png"  class="droptarget" id="delete" style="width:50px;height:50px;margin-left:15px;border:none!important">
-
-
-<br><br><br><br><br><br><br>
-
-<footer class="footer mt-auto py-1 fixed-bottom" style="background: #FFAA33!important;">
-    <center>
-        <img src="arrow-up.png" id="openDrawer" style="width: 50px;">
-        <img src="down.png" id="closeDrawer" style="width: 50px;">
-    </center>
-    <div class="container" id="applianceContainer">
-        <div id="applianceList" class="row">
+                </div>
+            </div>
         </div>
     </div>
-</footer>
+    <div class="row m-2" id="roomContainer">
+    </div>
 
 
-<script>
+
+
+    <p id="demo"></p>
+
+
+
+    <img src="delete.png" class="droptarget" id="delete"
+        style="width:50px;height:50px;margin-left:15px;border:none!important">
+
+
+    <br><br><br><br><br><br><br>
+
+    <footer class="footer mt-auto py-1 fixed-bottom" style="background: #FFAA33!important; width: 100%!important;">
+        <center>
+            <img src="arrow-up.png" id="openDrawer" style="width: 50px;">
+            <img src="down.png" id="closeDrawer" style="width: 50px;">
+        </center>
+        <div class="container" id="applianceContainer" style="width: 100%!important;">
+            <div id="applianceList" class="row">
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
         document.getElementById('applianceContainer').style.display = 'none';
 
-        function updateCanvas(sessionId ,roomId, imageId, fromRoom, canvasId) {
-            pywebview.api.update_appliance_canvas(sessionId ,roomId, imageId, fromRoom, canvasId).then(canvasShowMessage);
+        function updateCanvas(sessionId, roomId, imageId, fromRoom, canvasId) {
+            pywebview.api.update_appliance_canvas(sessionId, roomId, imageId, fromRoom, canvasId).then(canvasShowMessage);
         }
 
         function removeFromCanvas(canvasId) {
@@ -122,21 +132,21 @@
         }
 
 
-        function addToCanvas(sessionId ,roomId, imageId) {
-            pywebview.api.add_appliance_canvas(sessionId ,roomId, imageId).then(canvasShowMessage);
+        function addToCanvas(sessionId, roomId, imageId) {
+            pywebview.api.add_appliance_canvas(sessionId, roomId, imageId).then(canvasShowMessage);
         }
 
 
         function canvasShowMessage(response) {
 
             showRoom();
-            
+
             Swal.fire({
-              position: "top-end",
-              icon: response.message ? "success" : "error",
-              title: response.message ? response.message : response.error,
-              showConfirmButton: false,
-              timer: 1500
+                position: "top-end",
+                icon: response.message ? "success" : "error",
+                title: response.message ? response.message : response.error,
+                showConfirmButton: false,
+                timer: 1500
             });
         }
 
@@ -149,10 +159,12 @@
             var sessionId = localStorage.getItem('sessionId');
             document.getElementById('stitle').innerHTML = sessionName
 
-            if(sessionName) {
+            if (sessionName) {
                 document.getElementById('addRoom').style.display = '';
-            }else {
+                document.getElementById('delete').style.display = '';
+            } else {
                 document.getElementById('addRoom').style.display = 'none';
+                document.getElementById('delete').style.display = 'none';
             }
 
             showRoom();
@@ -178,7 +190,7 @@
             openDrawer.style.display = 'block';
             closeDrawer.style.display = 'none';
         }
-        
+
         function showNavbar() {
             pywebview.api.navbar().then(getNavbar);
         }
@@ -211,11 +223,11 @@
             showRoom();
 
             Swal.fire({
-              position: "top-end",
-              icon: response.message ? "success" : "error",
-              title: response.message ? response.message : response.error,
-              showConfirmButton: false,
-              timer: 1500
+                position: "top-end",
+                icon: response.message ? "success" : "error",
+                title: response.message ? response.message : response.error,
+                showConfirmButton: false,
+                timer: 1500
             });
         }
 
@@ -237,18 +249,18 @@
 
             showRoom();
 
-            if(sessionName) {
+            if (sessionName) {
                 document.getElementById('addRoom').style.display = '';
-            }else {
+            } else {
                 document.getElementById('addRoom').style.display = 'none';
             }
 
             Swal.fire({
-              position: "top-end",
-              icon: response.message ? "success" : "error",
-              title: response.message ? response.message : response.error,
-              showConfirmButton: false,
-              timer: 1500
+                position: "top-end",
+                icon: response.message ? "success" : "error",
+                title: response.message ? response.message : response.error,
+                showConfirmButton: false,
+                timer: 1500
             });
         }
 
@@ -271,143 +283,147 @@
             // Check if response has any data
         }
 
-        window.addEventListener('pywebviewready', function() {
+        window.addEventListener('pywebviewready', function () {
             showNavbar();
             showAppliance();
 
-                var sessionName = localStorage.getItem('sessionName');
-                document.getElementById('stitle').innerHTML = sessionName
-                 if(sessionName) {
-                    document.getElementById('addRoom').style.display = 'block';
-                    showRoom();
-                 }else {
-                    document.getElementById('addRoom').style.display = 'none';
+            var sessionName = localStorage.getItem('sessionName');
+            document.getElementById('stitle').innerHTML = sessionName
+            if (sessionName) {
+                document.getElementById('addRoom').style.display = 'block';
+                document.getElementById('delete').style.display = 'block';
 
-                 }
+                showRoom();
+            } else {
+                document.getElementById('addRoom').style.display = 'none';
+                document.getElementById('delete').style.display = 'none';
+
+            }
 
 
 
         });
 
-</script>
+    </script>
 
-<script>
+    <script>
 
-let draggedElement = null;
+        let draggedElement = null;
 
-// Handle drag start event
-document.addEventListener("dragstart", function(event) {
-  // Store the dragged element reference
-//   draggedElement = event.target;
+        // Handle drag start event
+        document.addEventListener("dragstart", function (event) {
+            // Store the dragged element reference
+            //   draggedElement = event.target;
 
-  // Set the dragged data (we can use the element's ID or a reference)
-  event.dataTransfer.setData("Text", event.target.id);
-  event.dataTransfer.setData("custom_id", event.target.dataset.customId);
-  event.dataTransfer.setData("is_update", event.target.dataset.isUpdate);
-  event.dataTransfer.setData("canvas_id", event.target.dataset.canvasId);
-  
-
-  // Output some text when starting to drag the element
-//   document.getElementById("demo").innerHTML = "Started to drag the element.";
-  
-  // Change the opacity of the draggable element
-//   event.target.style.opacity = "0.4";
-});
-
-// Change output text color while dragging
-document.addEventListener("drag", function(event) {
-//   document.getElementById("demo").style.color = "red";
-});
-
-// Reset opacity and output text when drag ends
-document.addEventListener("dragend", function(event) {
-//   document.getElementById("demo").innerHTML = "Finished dragging the element.";
-  event.target.style.opacity = "1";
-});
-
-// Handle drag enter event (change border of the drop target)
-document.addEventListener("dragenter", function(event) {
-  if (event.target.className == "droptarget") {
-    event.target.style.border = "3px dotted red";
-  }
-});
-
-// Allow drop event by preventing the default action
-document.addEventListener("dragover", function(event) {
-  event.preventDefault();
-});
-
-// Handle drag leave event (reset border of the drop target)
-document.addEventListener("dragleave", function(event) {
-  if (event.target.className == "droptarget") {
-    event.target.style.border = "";
-  }
-});
-
-// Handle drop event
-document.addEventListener("drop", function(event) {
-  event.preventDefault();
-    
-
-  const roomId = event.target.id;
-
-  // Only proceed if the drop target has the class 'droptarget'
-  if (event.target.className == "droptarget") {
-    // document.getElementById("demo").style.color = "";
-    event.target.style.border = "";
-
-    const imageId = event.dataTransfer.getData("Text");
-    const fromRoom = event.dataTransfer.getData("custom_id");
-    const isUpdate = event.dataTransfer.getData("is_update");
-    const canvasId = event.dataTransfer.getData("canvas_id");
-
-    var sessionName = localStorage.getItem('sessionName');
-    var sessionId = localStorage.getItem('sessionId');
+            // Set the dragged data (we can use the element's ID or a reference)
+            event.dataTransfer.setData("Text", event.target.id);
+            event.dataTransfer.setData("custom_id", event.target.dataset.customId);
+            event.dataTransfer.setData("is_update", event.target.dataset.isUpdate);
+            event.dataTransfer.setData("canvas_id", event.target.dataset.canvasId);
 
 
-    //dont accept drag drop if same room, and logic for updating or adding
+            // Output some text when starting to drag the element
+            //   document.getElementById("demo").innerHTML = "Started to drag the element.";
 
+            // Change the opacity of the draggable element
+            //   event.target.style.opacity = "0.4";
+        });
 
-    if(roomId != 'delete') {
+        // Change output text color while dragging
+        document.addEventListener("drag", function (event) {
+            //   document.getElementById("demo").style.color = "red";
+        });
 
-        if(fromRoom !== roomId) {
+        // Reset opacity and output text when drag ends
+        document.addEventListener("dragend", function (event) {
+            //   document.getElementById("demo").innerHTML = "Finished dragging the element.";
+            event.target.style.opacity = "1";
+        });
 
-            if(isUpdate == '1') {
-
-                updateCanvas(sessionId ,roomId, imageId, fromRoom, canvasId);
-                
-            }else {
-
-                addToCanvas(sessionId ,roomId, imageId);   
-
+        // Handle drag enter event (change border of the drop target)
+        document.addEventListener("dragenter", function (event) {
+            if (event.target.className == "droptarget") {
+                event.target.style.border = "3px dotted red";
             }
-        }
+        });
 
-    }else {
-        removeFromCanvas(canvasId);
-    }
+        // Allow drop event by preventing the default action
+        document.addEventListener("dragover", function (event) {
+            event.preventDefault();
+        });
 
+        // Handle drag leave event (reset border of the drop target)
+        document.addEventListener("dragleave", function (event) {
+            if (event.target.className == "droptarget") {
+                event.target.style.border = "";
+            }
+        });
 
-
-    //save to canvas table on db
-    //addToCanvas(sessionId ,roomId, imageId);
-
-    // Remove the dragged element from its original container (if it has a parent)
-    // if (draggedElement && draggedElement.parentNode) {
-    //   draggedElement.parentNode.removeChild(draggedElement);
-    // }
-
-    // Append the dragged element (or a new image) to the drop target
-    event.target.appendChild(draggedElement);
-  }
-});
+        // Handle drop event
+        document.addEventListener("drop", function (event) {
+            event.preventDefault();
 
 
+            const roomId = event.target.id;
+
+            // Only proceed if the drop target has the class 'droptarget'
+            if (event.target.className == "droptarget") {
+                // document.getElementById("demo").style.color = "";
+                event.target.style.border = "";
+
+                const imageId = event.dataTransfer.getData("Text");
+                const fromRoom = event.dataTransfer.getData("custom_id");
+                const isUpdate = event.dataTransfer.getData("is_update");
+                const canvasId = event.dataTransfer.getData("canvas_id");
+
+                var sessionName = localStorage.getItem('sessionName');
+                var sessionId = localStorage.getItem('sessionId');
 
 
-</script>
+                //dont accept drag drop if same room, and logic for updating or adding
+
+
+                if (roomId != 'delete') {
+
+                    if (fromRoom !== roomId) {
+
+                        if (isUpdate == '1') {
+
+                            updateCanvas(sessionId, roomId, imageId, fromRoom, canvasId);
+
+                        } else {
+
+                            addToCanvas(sessionId, roomId, imageId);
+
+                        }
+                    }
+
+                } else {
+                    removeFromCanvas(canvasId);
+                }
+
+
+
+                //save to canvas table on db
+                //addToCanvas(sessionId ,roomId, imageId);
+
+                // Remove the dragged element from its original container (if it has a parent)
+                // if (draggedElement && draggedElement.parentNode) {
+                //   draggedElement.parentNode.removeChild(draggedElement);
+                // }
+
+                // Append the dragged element (or a new image) to the drop target
+                event.target.appendChild(draggedElement);
+            }
+        });
+
+
+
+
+    </script>
 
     <script src="assets/bootstrap.min.js"></script>
     <script src="assets/sweetalert.js"></script>
 </body>
+
 </html>

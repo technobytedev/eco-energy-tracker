@@ -148,7 +148,7 @@ class Api:
                 cursor = connection.cursor()
                 
                 # Insert the appliance and image path into the database
-                query = "INSERT INTO appliance(name, image) VALUES(?, ?);"
+                query = "INSERT INTO sub_appliance(appliance_id, image) VALUES(?, ?);"
                 cursor.execute(query, (appliance, image_name))
                 connection.commit()  # Commit the transaction
                 
@@ -165,40 +165,50 @@ class Api:
 
     def appliance_list(self):
         try:
-            # Connect to the SQLite database (it will create the file if it doesn't exist)
+            # Connect to the SQLite database
             connection = sqlite3.connect('ecoenergy.db')
             cursor = connection.cursor()
             
-            # Execute the query
-            cursor.execute("SELECT * FROM appliance;")
-            rows = cursor.fetchall()  # Fetch all rows from the query result
-            columns = [description[0] for description in cursor.description]  # Get column names
+            # Execute the query to get main appliance data
+            appliance_query = "SELECT id, name, image FROM appliance;"
+            cursor.execute(appliance_query)
+            appliances = cursor.fetchall()
+            appliance_columns = [description[0] for description in cursor.description]
 
-            # Return the fetched data as a string (for simplicity)
             result = ""
-            for row in rows:
-                row_data = {columns[i]: row[i] for i in range(len(row))}  # Create dict of column names and row values
-                result += f"""
+            for appliance in appliances:
+                appliance_data = {appliance_columns[i]: appliance[i] for i in range(len(appliance))}
                 
+                # Execute the query to get sub-appliance data for each appliance
+                sub_appliance_query = """
+                SELECT id, image
+                FROM sub_appliance
+                WHERE appliance_id = ?;
+                """
+                cursor.execute(sub_appliance_query, (appliance_data['id'],))
+                sub_appliances = cursor.fetchall()
+                sub_appliance_columns = [description[0] for description in cursor.description]
+
+                # Generate the main image and dropdown structure
+                result += f"""
                 <div class="dropdown col-md-1 d-flex align-items-center">
-                    
-                    <img draggable="false" data-is-update="0" id="s{row_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" id="{row_data['id']}" style="width:90px" src="assets/uploads/{row_data['image']}" style="width:60px" />
-                    
-                    <ul class="dropdown-menu" style="background:lightgray" aria-labelledby="s{row_data['id']}">
-                    <div class="d-flex p-2 text-center">
-                        <div>Monitor(50W)
-                        <img draggable="true" id="{row_data['id']}" style="width:90px;margin:15px" src="assets/uploads/{row_data['image']}"/>
-                        </div>
-                        <div>Monitor(50W)
-                        <img draggable="true" id="{row_data['id']}" style="width:90px;margin:15px" src="assets/uploads/{row_data['image']}"/>
-                        </div>
-                         <div>Monitor(50W)
-                        <img draggable="true" id="{row_data['id']}" style="width:90px;margin:15px" src="assets/uploads/{row_data['image']}"/>
+                    <img draggable="false" data-is-update="0" id="s{appliance_data['id']}" data-bs-toggle="dropdown" aria-expanded="false" style="width:60px; height:60px; margin:15px;" src="assets/vectors/{appliance_data['image']}" />
+                    <ul class="dropdown-menu" style="background:white" aria-labelledby="s{appliance_data['id']}">
+                        <div class="d-flex p-4 text-center">
+                """
+                for sub_appliance in sub_appliances:
+                    sub_appliance_data = {sub_appliance_columns[i]: sub_appliance[i] for i in range(len(sub_appliance))}
+                    result += f"""
+                            <div>
+                                <img draggable="true" id="{sub_appliance_data['id']}" style="width:60px;margin:25px" src="assets/uploads/{sub_appliance_data['image']}"/>
+                            </div>
+                    """
+                result += """
                         </div>
                     </ul>
                 </div>
                 """
-      
+            
             return {'message': result}
         
         except sqlite3.Error as e:
@@ -244,7 +254,7 @@ class Api:
                         <a class="nav-link active" aria-current="page" href="index.html">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings.html">Setting</a>
+                        <a class="nav-link" href="">Setting</a>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -323,11 +333,11 @@ class Api:
             cursor = connection.cursor()
             
             # Query to fetch room and canvas details
-            query = """SELECT room.id AS roomId, room.name AS roomName, appliance.image AS applianceImage, 
-            appliance.id AS applianceImageId, simulation.*, canvas.id AS canvasRow
+            query = """SELECT room.id AS roomId, room.name AS roomName, sub_appliance.image AS applianceImage, 
+            sub_appliance.id AS applianceImageId, simulation.*, canvas.id AS canvasRow
             FROM canvas 
             INNER JOIN room ON room.id = canvas.room_id
-            INNER JOIN appliance ON appliance.id = canvas.appliance_id
+            INNER JOIN sub_appliance ON sub_appliance.id = canvas.appliance_id
             INNER JOIN simulation ON simulation.id = canvas.simulation_id 
             WHERE canvas.simulation_id = ?;"""
             cursor.execute(query, (simulation_id,))
@@ -365,7 +375,7 @@ class Api:
                 images_html = ""
                 if room_id in grouped_data:
                     images_html = "".join(
-                        f'<img draggable="true" data-is-update="1" data-canvas-id="{canvas_id}" data-custom-id="{room_id}" id="{image_id}" src="assets/uploads/{image}" style="width:60px" />' 
+                        f'<img draggable="true" data-is-update="1" data-canvas-id="{canvas_id}" data-custom-id="{room_id}" id="{image_id}" src="assets/uploads/{image}" style="width:60px; height:60px;" />' 
                         for image, image_id, canvas_id in grouped_data[room_id]['images']
                     )
                 result += f"""<div class="col-3">
