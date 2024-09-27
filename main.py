@@ -254,7 +254,11 @@ class Api:
                         <a class="nav-link active" aria-current="page" href="index.html">Home</a>
                     </li>
                     <li class="nav-item">
+<<<<<<< HEAD
                         <a class="nav-link" href="floor.html">Setting</a>
+=======
+                        <a class="nav-link" href="">Setting</a>
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">

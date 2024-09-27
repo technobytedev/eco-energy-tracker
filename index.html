@@ -51,8 +51,12 @@
         }
 
         .droptarget {
+<<<<<<< HEAD
             max-height: 200px;
             height: 120px;
+=======
+            height: 200px;
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
             padding: 5px;
             border: 1px solid black;
         }
@@ -63,6 +67,7 @@
             border: none !important;
 
         }
+<<<<<<< HEAD
 
     .room {
       border: 2px solid black;
@@ -74,6 +79,8 @@
       border: 2px dashed black;
       margin-top: 5px;
     }
+=======
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
     </style>
 </head>
 
@@ -106,6 +113,7 @@
     </div>
     <div class="row m-2" id="roomContainer">
     </div>
+<<<<<<< HEAD
 
     <div class="row m-3" style="width: auto; ">
 
@@ -176,6 +184,8 @@
        
         
     </div>
+=======
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
 
 
 
@@ -189,7 +199,10 @@
 
 
     <br><br><br><br><br><br><br>
+<<<<<<< HEAD
     <br><br><br><br><br><br><br>
+=======
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
 
     <footer class="footer mt-auto py-1 fixed-bottom" style="background: #FFAA33!important; width: 100%!important;">
         <center>
@@ -206,6 +219,7 @@
     <script>
         document.getElementById('applianceContainer').style.display = 'none';
 
+<<<<<<< HEAD
         function removeFeature() {
             document.getElementById('addRoom').style.display = 'none';
             document.getElementById('delete').style.display = 'none';
@@ -218,6 +232,8 @@
             
         }
 
+=======
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
         function updateCanvas(sessionId, roomId, imageId, fromRoom, canvasId) {
             pywebview.api.update_appliance_canvas(sessionId, roomId, imageId, fromRoom, canvasId).then(canvasShowMessage);
         }
@@ -229,7 +245,10 @@
 
         function addToCanvas(sessionId, roomId, imageId) {
             pywebview.api.add_appliance_canvas(sessionId, roomId, imageId).then(canvasShowMessage);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
         }
 
 
@@ -257,10 +276,17 @@
 
             if (sessionName) {
                 document.getElementById('addRoom').style.display = '';
+<<<<<<< HEAD
                 
             } else {
                 document.getElementById('addRoom').style.display = 'none';
                
+=======
+                document.getElementById('delete').style.display = '';
+            } else {
+                document.getElementById('addRoom').style.display = 'none';
+                document.getElementById('delete').style.display = 'none';
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
             }
 
             showRoom();

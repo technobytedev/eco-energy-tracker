@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
 
@@ -234,4 +235,242 @@
     <script src="assets/bootstrap.min.js"></script>
 </body>
 
+=======
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <link href="assets/bootstrap.min.css" rel="stylesheet">
+    <style>
+        nav {
+            margin: 0px;
+        }
+
+        #response-container {
+            display: none;
+            padding: 1rem;
+            margin: 3rem 5%;
+            font-size: 120%;
+            border: 5px dashed #ccc;
+            word-wrap: break-word;
+        }
+
+        label {
+            margin-left: 0.3rem;
+            margin-right: 0.3rem;
+        }
+
+        button {
+            font-size: 100%;
+            padding: 0.5rem;
+            margin: 0.3rem;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            color: white !important;
+        }
+
+        tr,
+        td {
+            border: 1px solid black;
+        }
+
+        /* Define widths for the table columns */
+        #data-table td:nth-child(1) {
+            width: 20%;
+        }
+
+        #data-table td:nth-child(2),
+        #data-table td:nth-child(3) {
+            width: 40%;
+        }
+    </style>
+</head>
+
+<body style="padding: 5px;">
+    <nav class="navbar navbar-expand-lg navbar-light  text-white" style="background: #50B498;">
+        <div class="container-fluid">
+
+            <div>
+                <button class="navbar-toggler text-white" style="color:white" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon text-white" style="color:white"></span>
+                </button>
+                <button class="btn btn-light">Compute</button>
+            </div>
+            <a class="navbar-brand text-white" href="index.html">EcoEnergy Tracker</a>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav text-white">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="settings.html">Setting</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Dropdown link
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="row mt-1" style="height: 500px;">
+        <div class="col-4 bg-white">
+            <div style="width: 100%; margin: auto; padding: 15px;color: #4e4e4e;">
+                <h3>Search Appliance:</h3>
+                <input type="text" id="searchByName" class="form-control mb-2">
+                <hr>
+                <h1>Upload and Display Image</h1>
+                Appliance Name:
+                <input type="text" id="appliance" class="form-control mb-2">
+                Image:
+                <img id="imagePreview" src="" alt="Image will be displayed here" style="max-width: 90px; height: auto;">
+                <input type="file" id="fileInput" accept="image/*" class="form-control mb-2">
+                <div class="d-grid">
+                    <input type="submit" class="btn btn-primary btn-block" id="uploadButton" value="Upload">
+                </div>
+                <br><br>
+            </div>
+        </div>
+        <div class="col-8 bg-light p-3">
+            <table id="data-table" class="table table-fluid" border="1" style="margin: auto;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Firstname</th>
+                        <th>Lastname</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>
+        </div>
+        <div class="col-12 " style="background: #468585;margin: auto; ">
+
+            <center>
+                <div id="applianceList">
+                </div>
+            </center>
+
+
+
+        </div>
+    </div>
+
+
+
+
+    <script>
+        window.addEventListener('pywebviewready', function () {
+            var container = document.getElementById('pywebview-status');
+            container.innerHTML = '<i>pywebview</i> is ready';
+        });
+
+        function showAppliance() {
+            pywebview.api.appliance_list().then(outputApplianceList);
+        }
+        function outputApplianceList(response) {
+            const a = document.getElementById('applianceList');
+            a.innerHTML = response.message;
+        }
+        // Listener event for search
+        const s = document.getElementById('searchByName');
+        s.addEventListener("keyup", searchInputBlank);
+
+        function searchInputBlank() {
+            const search = document.getElementById('searchByName').value;
+            if (search === '') {
+                // Call show all data if search is empty
+                showData();
+            } else {
+                searchByName();
+            }
+        }
+
+        // Fetch and display all data
+        function showData() {
+            pywebview.api.fetch_appliance().then(showResponse);
+        }
+
+        // Search by name
+        function searchByName() {
+            const name = document.getElementById('searchByName').value;
+            pywebview.api.search_data(name).then(showResponse);
+        }
+
+        // Display response in an HTML table
+        function showResponse(response) {
+
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = response.message;
+
+            // Check if response has any data
+        }
+
+        // Fetch and display all data after a delay
+        setTimeout(() => {
+            showData();
+            showAppliance();
+        }, 1000);
+    </script>
+    <script>
+        //upload image
+        document.getElementById('uploadButton').addEventListener('click', async function (event) {
+            var file = document.getElementById('fileInput').files[0];
+            var appliance = document.getElementById('appliance').value;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var base64Image = e.target.result.split(',')[1];
+                window.pywebview.api.upload_image(base64Image, appliance).then(function (response) {
+                    document.getElementById('image').src = response;
+                });
+            };
+            reader.readAsDataURL(file);
+            document.getElementById('fileInput').value = '';
+            document.getElementById('appliance').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            setTimeout(() => {
+                showData();
+            }, 2000);
+        });
+    </script>
+    <script>
+        document.getElementById('imagePreview').style.display = 'none';
+        document.getElementById('fileInput').addEventListener('change', function (event) {
+            var file = document.getElementById('fileInput').files[0];  // Get selected file
+            var appliance = document.getElementById('appliance').value;  // Get appliance name
+
+            if (file) {
+                var reader = new FileReader();
+
+                // Once the file is read as Data URL (base64), display the preview
+                reader.onload = function (e) {
+                    var preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;  // Set the base64 data as the image source
+                    preview.style.display = 'block';  // Show the image preview
+                };
+
+                reader.readAsDataURL(file);  // Read the file as base64 Data URL
+            }
+        });
+    </script>
+    <script src="assets/bootstrap.min.js"></script>
+</body>
+
+>>>>>>> 0c696d8b506b9d624267cacc3a8d6f76971922de
 </html>
